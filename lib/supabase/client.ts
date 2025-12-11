@@ -17,5 +17,11 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Create and export Supabase client for browser
 export const supabase = createBrowserClient(
   supabaseUrl || 'https://test.supabase.co',
-  supabaseAnonKey || 'test-anon-key'
+  supabaseAnonKey || 'test-anon-key',
+  {
+    cookieOptions: {
+      maxAge: undefined,
+      expires: undefined,
+    },
+  }
 );
