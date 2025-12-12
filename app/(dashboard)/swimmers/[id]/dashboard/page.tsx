@@ -118,12 +118,36 @@ export default function DashboardPage() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">
-          <h1 className={`text-3xl md:text-4xl font-bold ${colorClasses.title} mb-3`}>
-            {swimmer.name} {swimmer.surname}
-          </h1>
-          <p className={`${colorClasses.subtitle} text-lg`}>
-            {swimmer.age} yaş • {swimmer.gender}
-          </p>
+          <div className="flex gap-4 items-start">
+            {/* Swimmer Photo */}
+            <div className="flex-shrink-0">
+              <div className={`w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 ${isMale ? 'border-blue-200' : 'border-pink-200'} ${isMale ? 'bg-blue-100' : 'bg-pink-100'}`}>
+                {swimmer.photo_url ? (
+                  <img
+                    src={swimmer.photo_url}
+                    alt={`${swimmer.name} ${swimmer.surname}`}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center">
+                    <svg className={`w-10 h-10 md:w-12 md:h-12 ${isMale ? 'text-blue-400' : 'text-pink-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Swimmer Info */}
+            <div>
+              <h1 className={`text-3xl md:text-4xl font-bold ${colorClasses.title} mb-3`}>
+                {swimmer.name} {swimmer.surname}
+              </h1>
+              <p className={`${colorClasses.subtitle} text-lg`}>
+                {swimmer.age} yaş • {swimmer.gender}
+              </p>
+            </div>
+          </div>
         </div>
 
         {/* Pool Type Tabs */}

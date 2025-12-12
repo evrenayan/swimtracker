@@ -18,6 +18,7 @@ export interface Swimmer {
   age: number;
   gender: 'Erkek' | 'Kadın';
   user_id: string | null;
+  photo_url: string | null;
   created_at: Date;
 }
 

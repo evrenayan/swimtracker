@@ -148,6 +148,8 @@ export default function SwimmerList({ onAddClick, refreshTrigger }: SwimmerListP
               arrow: isMale ? 'text-blue-400' : 'text-pink-400',
               text: isMale ? 'text-blue-700' : 'text-pink-700',
               icon: isMale ? 'text-blue-500' : 'text-pink-500',
+              photoBg: isMale ? 'bg-blue-100' : 'bg-pink-100',
+              photoIcon: isMale ? 'text-blue-400' : 'text-pink-400',
             };
 
             return (
@@ -157,28 +159,51 @@ export default function SwimmerList({ onAddClick, refreshTrigger }: SwimmerListP
                 onClick={() => handleSwimmerClick(swimmer.id)}
                 className="p-6"
               >
-                <div className="flex items-start justify-between mb-3">
-                  <h3 className={`text-xl font-semibold ${colorClasses.title}`}>
-                    {swimmer.name} {swimmer.surname}
-                  </h3>
-                  <svg className={`w-5 h-5 ${colorClasses.arrow}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                  </svg>
-                </div>
-                <div className={`space-y-2 text-sm ${colorClasses.text}`}>
-                  <div className="flex items-center gap-2">
-                    <svg className={`w-4 h-4 ${colorClasses.icon}`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                    </svg>
-                    <span><span className="font-medium">Yaş:</span> {swimmer.age}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <svg className={`w-4 h-4 ${colorClasses.icon}`} fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
-                    </svg>
-                    <span><span className="font-medium">Cinsiyet:</span> {swimmer.gender}</span>
+                <div className="flex gap-4">
+                  {/* Swimmer Photo */}
+                  <div className="flex-shrink-0">
+                    <div className={`w-20 h-20 rounded-lg overflow-hidden border-2 ${isMale ? 'border-blue-200' : 'border-pink-200'} ${colorClasses.photoBg}`}>
+                      {swimmer.photo_url ? (
+                        <img
+                          src={swimmer.photo_url}
+                          alt={`${swimmer.name} ${swimmer.surname}`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center">
+                          <svg className={`w-10 h-10 ${colorClasses.photoIcon}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
                   </div>
 
+                  {/* Swimmer Info */}
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-start justify-between mb-3">
+                      <h3 className={`text-xl font-semibold ${colorClasses.title} truncate`}>
+                        {swimmer.name} {swimmer.surname}
+                      </h3>
+                      <svg className={`w-5 h-5 ${colorClasses.arrow} flex-shrink-0 ml-2`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                      </svg>
+                    </div>
+                    <div className={`space-y-2 text-sm ${colorClasses.text}`}>
+                      <div className="flex items-center gap-2">
+                        <svg className={`w-4 h-4 ${colorClasses.icon} flex-shrink-0`} fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                        <span><span className="font-medium">Yaş:</span> {swimmer.age}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <svg className={`w-4 h-4 ${colorClasses.icon} flex-shrink-0`} fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                        </svg>
+                        <span><span className="font-medium">Cinsiyet:</span> {swimmer.gender}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </Card>
             );

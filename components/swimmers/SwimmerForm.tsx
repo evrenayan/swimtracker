@@ -6,10 +6,12 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import toast from 'react-hot-toast';
 import { createSwimmer, updateSwimmer, getAvailableUsers } from '@/lib/supabase/queries';
+import { uploadSwimmerPhoto, deleteSwimmerPhoto } from '@/lib/supabase/storage';
 import { isAdmin } from '@/lib/auth/auth';
 import type { Swimmer, UserProfile } from '@/lib/types';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
+import Image from 'next/image';
 
 // Zod schema for swimmer form validation
 const swimmerSchema = z.object({
@@ -39,6 +41,9 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
   const [availableUsers, setAvailableUsers] = useState<UserProfile[]>([]);
   const [isUserAdmin, setIsUserAdmin] = useState(false);
   const [loadingUsers, setLoadingUsers] = useState(true);
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(swimmer?.photo_url || null);
+  const [isUploadingPhoto, setIsUploadingPhoto] = useState(false);
 
   const {
     register,
@@ -98,6 +103,7 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
         gender: swimmer.gender,
         user_id: swimmer.user_id || '',
       });
+      setPhotoPreview(swimmer.photo_url);
     } else {
       reset({
         name: '',
@@ -106,13 +112,63 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
         gender: '',
         user_id: '',
       });
+      setPhotoPreview(null);
     }
+    setPhotoFile(null);
   }, [swimmer, reset]);
+
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setPhotoFile(file);
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPhotoPreview(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+  };
 
   const onSubmit = async (data: SwimmerFormData) => {
     setIsSubmitting(true);
 
     try {
+      let photoUrl: string | null = swimmer?.photo_url || null;
+
+      // Handle photo upload if a new photo was selected
+      if (photoFile) {
+        setIsUploadingPhoto(true);
+
+        // If updating and there's an old photo, delete it first
+        if (swimmer?.photo_url) {
+          await deleteSwimmerPhoto(swimmer.photo_url);
+        }
+
+        // Create a temporary ID for new swimmers
+        const uploadId = swimmer?.id || `temp-${Date.now()}`;
+        const uploadResult = await uploadSwimmerPhoto(photoFile, uploadId);
+
+        setIsUploadingPhoto(false);
+
+        if (uploadResult.error) {
+          toast.error(uploadResult.error.message);
+          setIsSubmitting(false);
+          return;
+        }
+
+        photoUrl = uploadResult.data;
+      } else if (!photoPreview && swimmer?.photo_url) {
+        // Photo was removed
+        await deleteSwimmerPhoto(swimmer.photo_url);
+        photoUrl = null;
+      }
+
       // Transform form data to API format
       const swimmerData = {
         name: data.name.trim(),
@@ -120,6 +176,7 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
         age: parseInt(data.age, 10),
         gender: data.gender as 'Erkek' | 'Kadın',
         user_id: data.user_id || null,
+        photo_url: photoUrl,
       };
 
       let result;
@@ -139,6 +196,8 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
       }
 
       reset();
+      setPhotoFile(null);
+      setPhotoPreview(null);
       toast.success(swimmer ? 'Sporcu başarıyla güncellendi!' : 'Sporcu başarıyla eklendi!');
       onSuccess?.(result.data);
     } catch (error) {
@@ -150,6 +209,71 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
+      {/* Photo Upload Section */}
+      <div className="w-full">
+        <label className="block text-sm font-medium text-gray-700 mb-2">
+          Fotoğraf
+        </label>
+        <div className="flex items-start gap-4">
+          {/* Photo Preview */}
+          <div className="flex-shrink-0">
+            <div className="w-24 h-24 rounded-lg overflow-hidden border-2 border-gray-200 bg-gray-50">
+              {photoPreview ? (
+                <img
+                  src={photoPreview}
+                  alt="Sporcu fotoğrafı"
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                  <svg className="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Upload Controls */}
+          <div className="flex-1 space-y-2">
+            <div className="flex gap-2">
+              <label className="cursor-pointer">
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handlePhotoChange}
+                  disabled={isSubmitting}
+                  className="hidden"
+                />
+                <span className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                  </svg>
+                  Fotoğraf Seç
+                </span>
+              </label>
+
+              {photoPreview && (
+                <button
+                  type="button"
+                  onClick={handleRemovePhoto}
+                  disabled={isSubmitting}
+                  className="inline-flex items-center px-4 py-2 border border-red-300 rounded-md shadow-sm text-sm font-medium text-red-700 bg-white hover:bg-red-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                  Kaldır
+                </button>
+              )}
+            </div>
+            <p className="text-xs text-gray-500">
+              JPG, PNG veya GIF. Maksimum 5MB.
+            </p>
+          </div>
+        </div>
+      </div>
+
       <Input
         id="name"
         label="İsim"
