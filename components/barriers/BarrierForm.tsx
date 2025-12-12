@@ -24,8 +24,8 @@ const barrierSchema = z.object({
     swimming_style_id: z.string().min(1, 'Yüzme stili seçilmelidir'),
     barrier_type_id: z.string().min(1, 'Baraj tipi seçilmelidir'),
     time: z.string().min(1, 'Süre gereklidir').regex(
-        /^\d{1,2}:\d{2}:\d{3}$/,
-        'Süre formatı MM:SS:mmm olmalıdır (örn: 1:23:456)'
+        /^\d{1,2}:\d{2}:\d{2}$/,
+        'Süre formatı MM:SS:ss olmalıdır (örn: 1:23:45)'
     ),
 });
 
@@ -80,8 +80,10 @@ export default function BarrierForm({
         const totalSeconds = Math.floor(ms / 1000);
         const minutes = Math.floor(totalSeconds / 60);
         const seconds = totalSeconds % 60;
-        const milliseconds = ms % 1000;
-        return `${minutes}:${seconds.toString().padStart(2, '0')}:${milliseconds.toString().padStart(3, '0')}`;
+        const remainingMs = ms % 1000;
+        // Truncate to centiseconds (2 digits) - no rounding
+        const centiseconds = Math.floor(remainingMs / 10);
+        return `${minutes}:${seconds.toString().padStart(2, '0')}:${centiseconds.toString().padStart(2, '0')}`;
     }
 
     const onSubmit = async (data: BarrierFormData) => {
@@ -289,12 +291,12 @@ export default function BarrierForm({
 
                 <Input
                     id="time"
-                    label="Süre (MM:SS:mmm)"
+                    label="Süre (MM:SS:ss)"
                     type="text"
-                    placeholder="Örn: 1:23:456"
+                    placeholder="Örn: 1:23:45"
                     error={errors.time?.message}
                     disabled={isSubmitting}
-                    helperText="Format: Dakika:Saniye:Milisaniye"
+                    helperText="Format: Dakika:Saniye:Salise"
                     autoComplete="off"
                     data-lpignore="true"
                     {...register('time')}

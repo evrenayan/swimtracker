@@ -37,6 +37,7 @@ export interface RaceRecord {
 export interface SwimTime {
   minutes: number;
   seconds: number;
+  /** Represents centiseconds (salise) - 0 to 99, not milliseconds */
   milliseconds: number;
 }
 

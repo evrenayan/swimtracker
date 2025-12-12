@@ -25,7 +25,7 @@ const raceFormSchema = z.object({
   year: z.number().min(2000, 'Geçerli bir yıl giriniz').max(2100, 'Geçerli bir yıl giriniz'),
   minutes: z.number().min(0, 'Dakika 0 veya daha büyük olmalıdır').max(59, 'Dakika 59\'dan küçük olmalıdır'),
   seconds: z.number().min(0, 'Saniye 0 veya daha büyük olmalıdır').max(59, 'Saniye 59\'dan küçük olmalıdır'),
-  milliseconds: z.number().min(0, 'Milisaniye 0 veya daha büyük olmalıdır').max(999, 'Milisaniye 999\'dan küçük olmalıdır'),
+  milliseconds: z.number().min(0, 'Salise 0 veya daha büyük olmalıdır').max(99, 'Salise 99\'dan küçük olmalıdır'),
 });
 
 type RaceFormData = z.infer<typeof raceFormSchema>;
@@ -53,21 +53,21 @@ export default function RaceForm({
   // Initialize form with default or existing values
   const defaultValues: RaceFormData = existingRace
     ? {
-        pool_type: existingRace.pool_type,
-        swimming_style: existingRace.swimming_style,
-        month: existingRace.month,
-        year: existingRace.year,
-        ...millisecondsToTime(existingRace.total_milliseconds),
-      }
+      pool_type: existingRace.pool_type,
+      swimming_style: existingRace.swimming_style,
+      month: existingRace.month,
+      year: existingRace.year,
+      ...millisecondsToTime(existingRace.total_milliseconds),
+    }
     : {
-        pool_type: '',
-        swimming_style: '',
-        month: new Date().getMonth() + 1,
-        year: new Date().getFullYear(),
-        minutes: 0,
-        seconds: 0,
-        milliseconds: 0,
-      };
+      pool_type: '',
+      swimming_style: '',
+      month: new Date().getMonth() + 1,
+      year: new Date().getFullYear(),
+      minutes: 0,
+      seconds: 0,
+      milliseconds: 0,
+    };
 
   const {
     register,
@@ -167,8 +167,8 @@ export default function RaceForm({
           className={`
             w-full px-4 py-2 rounded-lg border transition-all duration-200
             focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent
-            ${errors.pool_type 
-              ? 'border-red-300 bg-red-50 text-red-900' 
+            ${errors.pool_type
+              ? 'border-red-300 bg-red-50 text-red-900'
               : 'border-pink-200 bg-white text-gray-900 hover:border-pink-300'
             }
             disabled:bg-gray-100 disabled:cursor-not-allowed
@@ -203,8 +203,8 @@ export default function RaceForm({
           className={`
             w-full px-4 py-2 rounded-lg border transition-all duration-200
             focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent
-            ${errors.swimming_style 
-              ? 'border-red-300 bg-red-50 text-red-900' 
+            ${errors.swimming_style
+              ? 'border-red-300 bg-red-50 text-red-900'
               : 'border-pink-200 bg-white text-gray-900 hover:border-pink-300'
             }
             disabled:bg-gray-100 disabled:cursor-not-allowed
@@ -252,10 +252,10 @@ export default function RaceForm({
         />
       </div>
 
-      {/* Time - MM:SS:mmm */}
+      {/* Time - MM:SS:ss */}
       <div>
         <label className="block text-sm font-medium text-pink-900 mb-1.5">
-          Süre (Dakika:Saniye:Milisaniye)
+          Süre (Dakika:Saniye:Salise)
         </label>
         <div className="grid grid-cols-3 gap-3">
           <Input
@@ -263,6 +263,12 @@ export default function RaceForm({
             placeholder="Dk"
             min="0"
             max="59"
+            onInput={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.value.length > 2) {
+                target.value = target.value.slice(0, 2);
+              }
+            }}
             error={errors.minutes?.message}
             disabled={isLoading}
             {...register('minutes', { valueAsNumber: true })}
@@ -272,15 +278,27 @@ export default function RaceForm({
             placeholder="Sn"
             min="0"
             max="59"
+            onInput={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.value.length > 2) {
+                target.value = target.value.slice(0, 2);
+              }
+            }}
             error={errors.seconds?.message}
             disabled={isLoading}
             {...register('seconds', { valueAsNumber: true })}
           />
           <Input
             type="number"
-            placeholder="Ms"
+            placeholder="Ss"
             min="0"
-            max="999"
+            max="99"
+            onInput={(e) => {
+              const target = e.target as HTMLInputElement;
+              if (target.value.length > 2) {
+                target.value = target.value.slice(0, 2);
+              }
+            }}
             error={errors.milliseconds?.message}
             disabled={isLoading}
             {...register('milliseconds', { valueAsNumber: true })}
