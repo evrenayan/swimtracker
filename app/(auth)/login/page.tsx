@@ -31,7 +31,7 @@ export default function LoginPage() {
       }
 
       if (user) {
-        toast.success('Giriş başarılı! Yönlendiriliyorsunuz...');
+        // toast.success('Giriş başarılı! Yönlendiriliyorsunuz...');
 
         // Redirect based on role
         if (user.profile?.role === 'admin') {
