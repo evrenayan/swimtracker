@@ -117,38 +117,74 @@ export default function DashboardPage() {
     <div className="p-4 md:p-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex gap-4 items-start">
-            {/* Swimmer Photo */}
-            <div className="flex-shrink-0">
-              <div className={`w-20 h-20 md:w-24 md:h-24 rounded-lg overflow-hidden border-2 ${isMale ? 'border-blue-200' : 'border-pink-200'} ${isMale ? 'bg-blue-100' : 'bg-pink-100'}`}>
-                {swimmer.photo_url ? (
-                  <img
-                    src={swimmer.photo_url}
-                    alt={`${swimmer.name} ${swimmer.surname}`}
-                    className="w-full h-full object-cover"
-                  />
-                ) : (
-                  <div className="w-full h-full flex items-center justify-center">
-                    <svg className={`w-10 h-10 md:w-12 md:h-12 ${isMale ? 'text-blue-400' : 'text-pink-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+        <Card className="mb-8 p-6">
+          <div className="flex flex-col md:flex-row md:justify-between md:items-start gap-4">
+            <div className="flex gap-4">
+              {/* Swimmer Photo */}
+              <div className="flex-shrink-0">
+                <div className={`w-24 h-24 rounded-lg overflow-hidden border-2 ${isMale ? 'border-blue-200' : 'border-pink-200'} ${isMale ? 'bg-blue-100' : 'bg-pink-100'}`}>
+                  {swimmer.photo_url ? (
+                    <img
+                      src={swimmer.photo_url}
+                      alt={`${swimmer.name} ${swimmer.surname}`}
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full flex items-center justify-center">
+                      <svg className={`w-12 h-12 ${isMale ? 'text-blue-400' : 'text-pink-400'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Swimmer Info */}
+              <div>
+                <div className="flex items-center gap-3 mb-3">
+                  <h1 className={`text-3xl md:text-4xl font-bold ${colorClasses.title}`}>
+                    {swimmer.name} {swimmer.surname}
+                  </h1>
+                </div>
+                <div className={`flex flex-wrap gap-6 ${colorClasses.subtitle}`}>
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
                     </svg>
+                    <span><span className="font-bold">Yaş:</span> {swimmer.age}</span>
                   </div>
-                )}
+                  <div className="flex items-center gap-2">
+                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-11a1 1 0 10-2 0v2H7a1 1 0 100 2h2v2a1 1 0 102 0v-2h2a1 1 0 100-2h-2V7z" clipRule="evenodd" />
+                    </svg>
+                    <span><span className="font-bold">Cinsiyet:</span> {swimmer.gender}</span>
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Swimmer Info */}
-            <div>
-              <h1 className={`text-3xl md:text-4xl font-bold ${colorClasses.title} mb-3`}>
-                {swimmer.name} {swimmer.surname}
-              </h1>
-              <p className={`${colorClasses.subtitle} text-lg`}>
-                {swimmer.age} yaş • {swimmer.gender}
-              </p>
+            <div className="flex gap-3">
+              <Button
+                onClick={() => router.push(`/swimmers/${swimmerId}`)}
+                variant={isMale ? 'secondary-blue' : 'secondary'}
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                Profil
+              </Button>
+              <Button
+                onClick={() => router.push(`/swimmers/${swimmerId}/barriers`)}
+                variant={isMale ? 'secondary-blue' : 'secondary'}
+              >
+                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Baraj Durumu
+              </Button>
             </div>
           </div>
-        </div>
+        </Card>
 
         {/* Pool Type Tabs */}
         <div className="mb-8">
@@ -226,18 +262,7 @@ export default function DashboardPage() {
           </Card>
         )}
 
-        {/* Back Button */}
-        <div className="mt-8">
-          <Button
-            onClick={() => router.push(`/swimmers/${swimmerId}`)}
-            variant={isMale ? 'ghost-blue' : 'ghost'}
-          >
-            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
-            </svg>
-            Sporcu Profiline Dön
-          </Button>
-        </div>
+
       </div>
     </div>
   );

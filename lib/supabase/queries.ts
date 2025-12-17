@@ -342,6 +342,24 @@ export async function getBarrierValuesWithDetails(): Promise<QueryResult<any[]>>
   return handleSupabaseError(data || [], error);
 }
 
+export async function getSwimmerBarriers(
+  age: number,
+  gender: string
+): Promise<QueryResult<any[]>> {
+  const { data, error } = await supabase
+    .from('barrier_values')
+    .select(`
+      *,
+      pool_types (name, length_meters),
+      swimming_styles (name, distance_meters, stroke_type),
+      barrier_types (name)
+    `)
+    .eq('age', age)
+    .eq('gender', gender);
+
+  return handleSupabaseError(data || [], error);
+}
+
 // ============================================================================
 // User Profile Queries
 // ============================================================================

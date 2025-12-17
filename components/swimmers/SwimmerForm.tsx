@@ -305,7 +305,7 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
       />
 
       <div className="w-full">
-        <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-1.5">
+        <label htmlFor="gender" className="block text-sm font-medium text-pink-900 mb-1.5">
           Cinsiyet
         </label>
         <select
@@ -313,10 +313,10 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
           {...register('gender')}
           className={`
             w-full px-4 py-2 rounded-lg border transition-all duration-200
-            focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
+            focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent
             ${errors.gender
               ? 'border-red-300 bg-red-50 text-red-900'
-              : 'border-gray-300 bg-white text-gray-900 hover:border-gray-400'
+              : 'border-pink-200 bg-white text-gray-900 hover:border-pink-300'
             }
             disabled:bg-gray-100 disabled:cursor-not-allowed
           `}
@@ -339,7 +339,7 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
       {/* User Assignment - Only visible to admins */}
       {isUserAdmin && (
         <div className="w-full">
-          <label htmlFor="user_id" className="block text-sm font-medium text-gray-700 mb-1.5">
+          <label htmlFor="user_id" className="block text-sm font-medium text-pink-900 mb-1.5">
             Kullanıcı Hesabı
             <span className="text-gray-500 text-xs ml-2">(Opsiyonel)</span>
           </label>
@@ -348,8 +348,8 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
             {...register('user_id')}
             className={`
               w-full px-4 py-2 rounded-lg border transition-all duration-200
-              focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent
-              border-gray-300 bg-white text-gray-900 hover:border-gray-400
+              focus:outline-none focus:ring-2 focus:ring-pink-500 focus:border-transparent
+              border-pink-200 bg-white text-gray-900 hover:border-pink-300
               disabled:bg-gray-100 disabled:cursor-not-allowed
             `}
             disabled={isSubmitting || loadingUsers}
