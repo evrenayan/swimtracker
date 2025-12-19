@@ -1,6 +1,10 @@
 import Link from 'next/link';
 
-export default function Logo() {
+interface LogoProps {
+  collapsed?: boolean;
+}
+
+export default function Logo({ collapsed }: LogoProps) {
   return (
     <Link href="/" className="flex items-center gap-3 px-4 py-6 hover:opacity-80 transition-opacity">
       <div className="relative">
@@ -37,10 +41,15 @@ export default function Logo() {
           />
         </svg>
       </div>
-      <div>
-        <h1 className="text-xl font-bold text-pink-700">SwimTrack</h1>
-        <p className="text-xs text-pink-500">Performans Takip</p>
-      </div>
-    </Link>
+
+      {
+        !collapsed && (
+          <div className="transition-opacity duration-300">
+            <h1 className="text-xl font-bold text-pink-700">SwimTrack</h1>
+            <p className="text-xs text-pink-500">Performans Takip</p>
+          </div>
+        )
+      }
+    </Link >
   );
 }

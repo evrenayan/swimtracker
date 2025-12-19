@@ -12,6 +12,7 @@ export default function Sidebar() {
   const pathname = usePathname();
   const router = useRouter();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [user, setUser] = useState<AuthUser | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -116,17 +117,36 @@ export default function Sidebar() {
       <aside
         className={`
           fixed lg:static inset-y-0 left-0 z-40
-          w-64 bg-white border-r border-pink-100 min-h-screen flex flex-col
-          transform transition-transform duration-300 ease-in-out
+          bg-white border-r border-pink-100 min-h-screen flex flex-col
+          transform transition-all duration-300 ease-in-out
           ${isMobileMenuOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+          ${isCollapsed ? 'lg:w-20' : 'lg:w-64'}
+          w-64
         `}
       >
+        {/* Desktop Collapse Toggle */}
+        <button
+          onClick={() => setIsCollapsed(!isCollapsed)}
+          className="hidden lg:flex absolute -right-3 top-20 bg-white border border-pink-100 rounded-full p-1 text-pink-500 hover:text-pink-700 shadow-sm z-50"
+        >
+          <svg
+            className={`w-4 h-4 transform transition-transform duration-300 ${isCollapsed ? 'rotate-180' : ''}`}
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+          </svg>
+        </button>
+
         {/* Logo */}
-        <Logo />
+        <div className={`transition-all duration-300 ${isCollapsed ? 'px-2' : ''}`}>
+          <Logo collapsed={isCollapsed} />
+        </div>
 
         {/* User Info */}
         {user && (
-          <div className="px-4 py-2 mb-2">
+          <div className={`px-4 py-2 mb-2 transition-all duration-300 ${isCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100'}`}>
             <div className="bg-pink-50 rounded-lg p-3 border border-pink-100">
               <p className="text-sm font-medium text-gray-900 truncate">
                 {user.profile?.full_name || user.email}
@@ -158,10 +178,12 @@ export default function Sidebar() {
                         ? 'bg-gradient-to-r from-pink-100 to-pink-50 text-pink-700 font-semibold shadow-sm'
                         : 'text-gray-600 hover:bg-pink-50 hover:text-pink-600'
                       }
+                      ${isCollapsed ? 'justify-center px-2' : ''}
                     `}
+                    title={isCollapsed ? item.name : ''}
                   >
                     {item.icon}
-                    <span>{item.name}</span>
+                    {!isCollapsed && <span className="whitespace-nowrap transition-all duration-300">{item.name}</span>}
                   </Link>
                 </li>
               );
@@ -173,10 +195,14 @@ export default function Sidebar() {
         <div className="px-3 py-4 border-t border-pink-100">
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 text-gray-600 hover:bg-pink-50 hover:text-pink-600 rounded-lg transition-all duration-200"
+            className={`
+              w-full flex items-center gap-2 px-4 py-3 text-gray-600 hover:bg-pink-50 hover:text-pink-600 rounded-lg transition-all duration-200
+              ${isCollapsed ? 'justify-center px-2' : 'justify-start'}
+            `}
+            title={isCollapsed ? 'Çıkış Yap' : ''}
           >
             <svg
-              className="w-5 h-5"
+              className="w-5 h-5 min-w-[1.25rem]"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -188,16 +214,18 @@ export default function Sidebar() {
                 d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"
               />
             </svg>
-            <span>Çıkış Yap</span>
+            {!isCollapsed && <span className="whitespace-nowrap transition-all duration-300">Çıkış Yap</span>}
           </button>
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-pink-100">
-          <p className="text-xs text-gray-500 text-center">
-            © 2025 SwimTrack
-          </p>
-        </div>
+        {!isCollapsed && (
+          <div className="px-4 py-3 border-t border-pink-100">
+            <p className="text-xs text-gray-500 text-center">
+              © 2025 SwimTrack
+            </p>
+          </div>
+        )}
       </aside>
     </>
   );
