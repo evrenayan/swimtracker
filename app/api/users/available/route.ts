@@ -24,25 +24,18 @@ export async function GET(request: Request) {
 
     try {
         // Test connection with swimmers table first
-        console.log('🔍 API Route: Testing connection with swimmers table...');
         const { data: swimmersData, error: swimmersError } = await supabase
             .from('swimmers')
             .select('id')
             .limit(1);
 
-        console.log('📊 API Route: Swimmers test result:', { success: !swimmersError, count: swimmersData?.length, error: swimmersError });
-
         // Check auth user
         const { data: { user }, error: authError } = await supabase.auth.getUser();
-        console.log('👤 API Route: Auth User:', { id: user?.id, role: user?.role, email: user?.email, error: authError });
 
         // Get all users
-        console.log('🔍 API Route: Fetching all users...');
         const { data: allUsers, error: usersError } = await supabase
             .from('user_profiles')
             .select('*');
-
-        console.log('📊 API Route: Users result:', { count: allUsers?.length, error: usersError });
 
         if (usersError) {
             console.error('Error fetching users:', usersError);

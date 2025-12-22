@@ -380,14 +380,10 @@ export async function getAllUserProfiles(): Promise<QueryResult<UserProfile[]>> 
  * Get users that are not linked to any swimmer (for assignment)
  */
 export async function getAvailableUsers(currentUserId?: string | null): Promise<QueryResult<UserProfile[]>> {
-  console.log('🔍 getAvailableUsers called with currentUserId:', currentUserId);
-
   // Get all users
   const { data: allUsers, error: usersError } = await supabase
     .from('user_profiles')
     .select('*');
-
-  console.log('📊 All users query result:', { allUsers, usersError });
 
   if (usersError) {
     console.error('❌ Error fetching users:', usersError);
@@ -399,8 +395,6 @@ export async function getAvailableUsers(currentUserId?: string | null): Promise<
     .from('swimmers')
     .select('user_id')
     .not('user_id', 'is', null);
-
-  console.log('🔗 Linked users query result:', { linkedUserIds, linkedError });
 
   if (linkedError) {
     console.error('❌ Error fetching linked users:', linkedError);
@@ -418,8 +412,6 @@ export async function getAvailableUsers(currentUserId?: string | null): Promise<
   const availableUsers = (allUsers || []).filter(
     (user: UserProfile) => !linkedIds.has(user.id)
   );
-
-  console.log('✅ Available users:', availableUsers);
 
   return handleSupabaseError(availableUsers, null);
 }
