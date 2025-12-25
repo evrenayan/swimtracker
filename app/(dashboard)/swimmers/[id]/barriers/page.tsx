@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback, useMemo } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { getSwimmer, getRaceRecordsBySwimmer, getSwimmerBarriers } from '@/lib/supabase/queries';
+import { logger } from '@/lib/logger';
 import type { Swimmer, RaceRecord } from '@/lib/types';
 import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Card from '@/components/ui/Card';
@@ -129,7 +130,7 @@ export default function SwimmerBarriersPage() {
             setData(results);
 
         } catch (err: any) {
-            console.error('Error loading barrier status:', err);
+            logger.error('barriers_load_error', { error: err });
             setError(err.message || 'Beklenmeyen bir hata oluştu');
         } finally {
             setLoading(false);

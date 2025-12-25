@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
+import { logToSupabase } from '@/lib/logger';
 
 export async function GET(request: Request) {
     const cookieStore = await cookies();
@@ -38,7 +39,13 @@ export async function GET(request: Request) {
             .select('*');
 
         if (usersError) {
-            console.error('Error fetching users:', usersError);
+            logToSupabase({
+                action: 'api_get_available_users_error',
+                level: 'error',
+                details: { error: usersError },
+                user_id: user?.id
+            }, supabase as any); // Type assertion might be needed if types mismatch versions
+
             // If 404, it might be that the table doesn't exist or RLS is blocking
             if (usersError.code === '42P01') { // undefined_table
                 return NextResponse.json({ data: [] }); // Return empty if table doesn't exist
@@ -56,7 +63,13 @@ export async function GET(request: Request) {
             .not('user_id', 'is', null);
 
         if (linkedError) {
-            console.error('Error fetching linked users:', linkedError);
+            logToSupabase({
+                action: 'api_get_available_users_linked_error',
+                level: 'error',
+                details: { error: linkedError },
+                user_id: user?.id
+            }, supabase as any);
+
             return NextResponse.json(
                 { error: linkedError.message },
                 { status: 500 }
@@ -77,7 +90,12 @@ export async function GET(request: Request) {
 
         return NextResponse.json({ data: availableUsers });
     } catch (error: any) {
-        console.error('Unexpected error:', error);
+        logToSupabase({
+            action: 'api_get_available_users_unexpected_error',
+            level: 'error',
+            details: { error: error.message || error }
+        }, supabase as any);
+
         return NextResponse.json(
             { error: error.message || 'Internal server error' },
             { status: 500 }

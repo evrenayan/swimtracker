@@ -3,6 +3,7 @@
  */
 
 import { supabase } from '../supabase/client';
+import { logger } from '../logger';
 import type { UserProfile, UserRole } from '../types';
 
 export interface AuthUser {
@@ -21,11 +22,14 @@ export async function signIn(email: string, password: string) {
   });
 
   if (error) {
+    logger.error('auth_sign_in', { error: error.message });
     return { user: null, error: error.message };
   }
 
   // Fetch user profile
   const profile = await getUserProfile(data.user.id);
+
+  logger.info('auth_sign_in_success', { user_id: data.user.id });
 
   return {
     user: {
@@ -56,8 +60,11 @@ export async function signUp(
   });
 
   if (error) {
+    logger.error('auth_sign_up', { error: error.message });
     return { user: null, error: error.message };
   }
+
+  logger.info('auth_sign_up_success', { user_id: data.user?.id });
 
   return {
     user: data.user,
@@ -70,6 +77,11 @@ export async function signUp(
  */
 export async function signOut() {
   const { error } = await supabase.auth.signOut();
+  if (error) {
+    logger.error('auth_sign_out', { error: error.message });
+  } else {
+    logger.info('auth_sign_out_success');
+  }
   return { error: error?.message || null };
 }
 
@@ -103,7 +115,7 @@ export async function getUserProfile(userId: string) {
     .single();
 
   if (error) {
-    console.error('Error fetching user profile:', error);
+    logger.error('get_user_profile', { error: error.message, user_id: userId });
     return { data: null, error: error.message };
   }
 
@@ -125,8 +137,11 @@ export async function updateUserProfile(
     .single();
 
   if (error) {
+    logger.error('update_user_profile', { error: error.message, user_id: userId });
     return { data: null, error: error.message };
   }
+
+  logger.info('update_user_profile_success', { user_id: userId, updates });
 
   return { data: data as UserProfile, error: null };
 }
@@ -149,6 +164,7 @@ export async function getAllUserProfiles() {
     .order('created_at', { ascending: false });
 
   if (error) {
+    logger.error('get_all_user_profiles', { error: error.message });
     return { data: null, error: error.message };
   }
 
@@ -167,8 +183,11 @@ export async function updateUserRole(userId: string, role: UserRole) {
     .single();
 
   if (error) {
+    logger.error('update_user_role', { error: error.message, user_id: userId, role });
     return { data: null, error: error.message };
   }
+
+  logger.info('update_user_role_success', { user_id: userId, role });
 
   return { data: data as UserProfile, error: null };
 }
@@ -187,6 +206,7 @@ export async function getUserSwimmer() {
     .maybeSingle();
 
   if (error) {
+    logger.error('get_user_swimmer', { error: error.message, user_id: user.id });
     return { data: null, error: error.message };
   }
 

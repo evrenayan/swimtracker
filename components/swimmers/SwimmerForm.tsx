@@ -8,6 +8,7 @@ import toast from 'react-hot-toast';
 import { createSwimmer, updateSwimmer, getAvailableUsers } from '@/lib/supabase/queries';
 import { uploadSwimmerPhoto, deleteSwimmerPhoto } from '@/lib/supabase/storage';
 import { isAdmin } from '@/lib/auth/auth';
+import { logger } from '@/lib/logger';
 import type { Swimmer, UserProfile } from '@/lib/types';
 import Input from '@/components/ui/Input';
 import Button from '@/components/ui/Button';
@@ -81,10 +82,10 @@ export default function SwimmerForm({ swimmer, onSuccess, onCancel }: SwimmerFor
               setAvailableUsers(result.data);
             }
           } else {
-            console.error('Failed to fetch available users:', await response.text());
+            logger.error('form_fetch_users_failed', { error: await response.text() });
           }
         } catch (error) {
-          console.error('Error loading available users:', error);
+          logger.error('form_load_users_error', { error });
         }
       }
       setLoadingUsers(false);

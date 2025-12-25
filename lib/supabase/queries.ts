@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { logger } from '../logger';
 import type {
   Swimmer,
   RaceRecord,
@@ -20,10 +21,11 @@ interface QueryResult<T> {
 
 function handleSupabaseError<T>(
   data: T | null,
-  error: any
+  error: any,
+  action: string
 ): QueryResult<T> {
   if (error) {
-    console.error('Supabase query error:', error);
+    logger.error(action, { error });
     return {
       data: null,
       error: new Error(error.message || 'Database operation failed'),
@@ -45,7 +47,11 @@ export async function createSwimmer(
     .select()
     .single();
 
-  return handleSupabaseError(data, error);
+  if (!error) {
+    logger.info('create_swimmer', { swimmer_id: data?.id });
+  }
+
+  return handleSupabaseError(data, error, 'create_swimmer');
 }
 
 export async function getSwimmer(id: string): Promise<QueryResult<Swimmer>> {
@@ -55,7 +61,7 @@ export async function getSwimmer(id: string): Promise<QueryResult<Swimmer>> {
     .eq('id', id)
     .single();
 
-  return handleSupabaseError(data, error);
+  return handleSupabaseError(data, error, 'get_swimmer');
 }
 
 export async function getAllSwimmers(): Promise<QueryResult<Swimmer[]>> {
@@ -64,7 +70,7 @@ export async function getAllSwimmers(): Promise<QueryResult<Swimmer[]>> {
     .select('*')
     .order('created_at', { ascending: false });
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_all_swimmers');
 }
 
 export async function updateSwimmer(
@@ -78,7 +84,11 @@ export async function updateSwimmer(
     .select()
     .single();
 
-  return handleSupabaseError(data, error);
+  if (!error) {
+    logger.info('update_swimmer', { swimmer_id: id, updates });
+  }
+
+  return handleSupabaseError(data, error, 'update_swimmer');
 }
 
 export async function deleteSwimmer(id: string): Promise<QueryResult<void>> {
@@ -87,7 +97,11 @@ export async function deleteSwimmer(id: string): Promise<QueryResult<void>> {
     .delete()
     .eq('id', id);
 
-  return handleSupabaseError(null, error);
+  if (!error) {
+    logger.info('delete_swimmer', { swimmer_id: id });
+  }
+
+  return handleSupabaseError(null, error, 'delete_swimmer');
 }
 
 // ============================================================================
@@ -103,7 +117,11 @@ export async function createRaceRecord(
     .select()
     .single();
 
-  return handleSupabaseError(data, error);
+  if (!error) {
+    logger.info('create_race_record', { record_id: data?.id });
+  }
+
+  return handleSupabaseError(data, error, 'create_race_record');
 }
 
 export async function getRaceRecord(
@@ -115,7 +133,7 @@ export async function getRaceRecord(
     .eq('id', id)
     .single();
 
-  return handleSupabaseError(data, error);
+  return handleSupabaseError(data, error, 'get_race_record');
 }
 
 export async function getRaceRecordsBySwimmer(
@@ -128,7 +146,7 @@ export async function getRaceRecordsBySwimmer(
     .order('year', { ascending: false })
     .order('month', { ascending: false });
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_race_records_by_swimmer');
 }
 
 export async function getRaceRecordsBySwimmerAndStyle(
@@ -145,7 +163,7 @@ export async function getRaceRecordsBySwimmerAndStyle(
     .order('year', { ascending: true })
     .order('month', { ascending: true });
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_race_records_by_style');
 }
 
 export async function updateRaceRecord(
@@ -159,7 +177,11 @@ export async function updateRaceRecord(
     .select()
     .single();
 
-  return handleSupabaseError(data, error);
+  if (!error) {
+    logger.info('update_race_record', { record_id: id, updates });
+  }
+
+  return handleSupabaseError(data, error, 'update_race_record');
 }
 
 export async function deleteRaceRecord(id: string): Promise<QueryResult<void>> {
@@ -168,7 +190,11 @@ export async function deleteRaceRecord(id: string): Promise<QueryResult<void>> {
     .delete()
     .eq('id', id);
 
-  return handleSupabaseError(null, error);
+  if (!error) {
+    logger.info('delete_race_record', { record_id: id });
+  }
+
+  return handleSupabaseError(null, error, 'delete_race_record');
 }
 
 // ============================================================================
@@ -181,7 +207,7 @@ export async function getAllPoolTypes(): Promise<QueryResult<PoolType[]>> {
     .select('*')
     .order('length_meters', { ascending: true });
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_pool_types');
 }
 
 export async function getAllSwimmingStyles(): Promise<
@@ -192,7 +218,7 @@ export async function getAllSwimmingStyles(): Promise<
     .select('*')
     .order('distance_meters', { ascending: true });
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_swimming_styles');
 }
 
 export async function getAllBarrierTypes(): Promise<QueryResult<BarrierType[]>> {
@@ -201,7 +227,7 @@ export async function getAllBarrierTypes(): Promise<QueryResult<BarrierType[]>> 
     .select('*')
     .order('name', { ascending: true });
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_barrier_types');
 }
 
 export async function getBarrierValues(
@@ -218,7 +244,7 @@ export async function getBarrierValues(
     .eq('pool_type_id', poolTypeId)
     .eq('swimming_style_id', swimmingStyleId);
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_barrier_values');
 }
 
 export async function getAllBarrierValues(): Promise<
@@ -228,7 +254,7 @@ export async function getAllBarrierValues(): Promise<
     .from('barrier_values')
     .select('*');
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_all_barrier_values');
 }
 
 // ============================================================================
@@ -250,7 +276,7 @@ export async function getBestTimeForStyle(
     .limit(1)
     .maybeSingle();
 
-  return handleSupabaseError(data, error);
+  return handleSupabaseError(data, error, 'get_best_time');
 }
 
 export async function getSwimmerWithRaceCount(
@@ -268,7 +294,7 @@ export async function getSwimmerWithRaceCount(
     .eq('swimmer_id', id);
 
   if (error) {
-    return handleSupabaseError(null, error);
+    return handleSupabaseError(null, error, 'get_swimmer_race_count');
   }
 
   return {
@@ -293,7 +319,11 @@ export async function createBarrierValue(
     .select()
     .single();
 
-  return handleSupabaseError(data, error);
+  if (!error) {
+    logger.info('create_barrier_value', { barrier_id: data?.id });
+  }
+
+  return handleSupabaseError(data, error, 'create_barrier_value');
 }
 
 export async function updateBarrierValue(
@@ -307,7 +337,11 @@ export async function updateBarrierValue(
     .select()
     .single();
 
-  return handleSupabaseError(data, error);
+  if (!error) {
+    logger.info('update_barrier_value', { barrier_id: id, updates });
+  }
+
+  return handleSupabaseError(data, error, 'update_barrier_value');
 }
 
 export async function deleteBarrierValue(id: string): Promise<QueryResult<void>> {
@@ -324,7 +358,11 @@ export async function deleteBarrierValue(id: string): Promise<QueryResult<void>>
     };
   }
 
-  return handleSupabaseError(null, error);
+  if (!error) {
+    logger.info('delete_barrier_value', { barrier_id: id });
+  }
+
+  return handleSupabaseError(null, error, 'delete_barrier_value');
 }
 
 export async function getBarrierValuesWithDetails(): Promise<QueryResult<any[]>> {
@@ -339,7 +377,7 @@ export async function getBarrierValuesWithDetails(): Promise<QueryResult<any[]>>
     .order('age', { ascending: true })
     .order('gender', { ascending: true });
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_barrier_values_details');
 }
 
 export async function getSwimmerBarriers(
@@ -357,7 +395,7 @@ export async function getSwimmerBarriers(
     .eq('age', age)
     .eq('gender', gender);
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_swimmer_barriers');
 }
 
 // ============================================================================
@@ -373,7 +411,7 @@ export async function getAllUserProfiles(): Promise<QueryResult<UserProfile[]>> 
     .select('*')
     .order('created_at', { ascending: false });
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_all_user_profiles');
 }
 
 /**
@@ -386,8 +424,8 @@ export async function getAvailableUsers(currentUserId?: string | null): Promise<
     .select('*');
 
   if (usersError) {
-    console.error('❌ Error fetching users:', usersError);
-    return handleSupabaseError([], usersError);
+    logger.error('get_available_users', { error: usersError });
+    return handleSupabaseError([], usersError, 'get_available_users');
   }
 
   // Get all linked user IDs
@@ -397,8 +435,8 @@ export async function getAvailableUsers(currentUserId?: string | null): Promise<
     .not('user_id', 'is', null);
 
   if (linkedError) {
-    console.error('❌ Error fetching linked users:', linkedError);
-    return handleSupabaseError([], linkedError);
+    logger.error('get_available_users_linked', { error: linkedError });
+    return handleSupabaseError([], linkedError, 'get_available_users_linked');
   }
 
   // Filter out users that are already linked to swimmers
@@ -413,7 +451,7 @@ export async function getAvailableUsers(currentUserId?: string | null): Promise<
     (user: UserProfile) => !linkedIds.has(user.id)
   );
 
-  return handleSupabaseError(availableUsers, null);
+  return handleSupabaseError(availableUsers, null, 'get_available_users');
 }
 
 /**
@@ -432,7 +470,7 @@ export async function getSwimmersWithUsers(): Promise<QueryResult<any[]>> {
     `)
     .order('created_at', { ascending: false });
 
-  return handleSupabaseError(data || [], error);
+  return handleSupabaseError(data || [], error, 'get_swimmers_with_users');
 }
 
 /**
@@ -449,7 +487,9 @@ export async function linkUserToSwimmer(
     .select()
     .single();
 
-  return handleSupabaseError(data, error);
+  if (!error) {
+    logger.info('link_user_to_swimmer', { swimmer_id: swimmerId, user_id: userId });
+  }
+
+  return handleSupabaseError(data, error, 'link_user_to_swimmer');
 }
-
-

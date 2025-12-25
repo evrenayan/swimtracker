@@ -11,6 +11,7 @@ import {
   getAllPoolTypes,
   getAllSwimmingStyles,
 } from '@/lib/supabase/queries';
+import { logger } from '@/lib/logger';
 
 interface BarrierEvaluationProps {
   swimmerId: string;
@@ -60,9 +61,9 @@ export default function BarrierEvaluation({
         ]);
 
         if (barriersResult.error || typesResult.error || poolTypesResult.error || stylesResult.error) {
-          console.error('Error fetching barriers data:',
-            barriersResult.error || typesResult.error || poolTypesResult.error || stylesResult.error
-          );
+          logger.error('barrier_data_fetch_error', {
+            error: barriersResult.error || typesResult.error || poolTypesResult.error || stylesResult.error
+          });
           setLoading(false);
           return;
         }
@@ -77,7 +78,7 @@ export default function BarrierEvaluation({
         const currentStyle = swimmingStyles.find(s => s.name === swimmingStyle);
 
         if (!currentPoolType || !currentStyle) {
-          console.error('Could not find IDs for pool type or style:', { poolType, swimmingStyle });
+          logger.error('barrier_eval_missing_types', { poolType, swimmingStyle });
           setEvaluations([]);
           setLoading(false);
           return;
@@ -111,7 +112,7 @@ export default function BarrierEvaluation({
         setEvaluations(results);
         setHasRaces(true);
       } catch (error) {
-        console.error('Error evaluating barriers:', error);
+        logger.error('barrier_eval_error', { error });
       } finally {
         setLoading(false);
       }

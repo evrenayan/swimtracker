@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import toast from 'react-hot-toast';
 import { getSwimmer, getRaceRecordsBySwimmer, deleteRaceRecord } from '@/lib/supabase/queries';
+import { logger } from '@/lib/logger';
 import RaceForm from '@/components/races/RaceForm';
 import RaceTable from '@/components/races/RaceTable';
 import SwimmerForm from '@/components/swimmers/SwimmerForm';
@@ -61,7 +62,7 @@ export default function SwimmerProfilePage() {
       const result = await getRaceRecordsBySwimmer(swimmerId);
 
       if (result.error) {
-        console.error('Error loading races:', result.error);
+        logger.error('profile_load_races_error', { error: result.error });
         setIsLoadingRaces(false);
         return;
       }
@@ -69,7 +70,7 @@ export default function SwimmerProfilePage() {
       setRaces(result.data || []);
       setIsLoadingRaces(false);
     } catch (err) {
-      console.error('Unexpected error loading races:', err);
+      logger.error('profile_load_races_unexpected_error', { error: err });
       setIsLoadingRaces(false);
     }
   }, [swimmerId]);

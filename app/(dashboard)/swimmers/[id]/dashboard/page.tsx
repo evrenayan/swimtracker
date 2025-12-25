@@ -9,6 +9,7 @@ import {
   getRaceRecordsBySwimmerAndStyle,
   getAllSwimmingStyles,
 } from '@/lib/supabase/queries';
+import { logger } from '@/lib/logger';
 import { prepareChartData, calculateTimeDifferences } from '@/lib/utils/chartData';
 import PerformanceChart from '@/components/dashboard/PerformanceChart';
 import ChartLegend from '@/components/dashboard/ChartLegend';
@@ -40,7 +41,7 @@ export default function DashboardPage() {
         // Fetch swimmer data
         const swimmerResult = await getSwimmer(swimmerId);
         if (swimmerResult.error || !swimmerResult.data) {
-          console.error('Error fetching swimmer:', swimmerResult.error);
+          logger.error('dashboard_fetch_swimmer_error', { error: swimmerResult.error });
           toast.error('Sporcu bilgileri yüklenirken bir hata oluştu');
           router.push('/swimmers');
           return;
@@ -50,7 +51,7 @@ export default function DashboardPage() {
         // Fetch all swimming styles
         const stylesResult = await getAllSwimmingStyles();
         if (stylesResult.error || !stylesResult.data) {
-          console.error('Error fetching styles:', stylesResult.error);
+          logger.error('dashboard_fetch_styles_error', { error: stylesResult.error });
           return;
         }
         setSwimmingStyles(stylesResult.data);
@@ -69,7 +70,7 @@ export default function DashboardPage() {
         }
         setRacesByStyle(racesMap);
       } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+        logger.error('dashboard_fetch_data_error', { error });
       } finally {
         setLoading(false);
       }
