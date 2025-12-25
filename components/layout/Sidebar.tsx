@@ -79,7 +79,6 @@ export default function Sidebar() {
     if (error) {
       toast.error('Çıkış yapılırken bir hata oluştu');
     } else {
-      toast.success('Başarıyla çıkış yapıldı');
       router.push('/login');
     }
   };
