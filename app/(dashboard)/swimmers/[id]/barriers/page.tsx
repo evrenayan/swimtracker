@@ -17,6 +17,8 @@ interface BestBarrierResult {
     bestBarrierName: string | null;
     bestBarrierTime: number | null;
     allPassedBarriers: string[];
+    nextBarrierName: string | null;
+    nextBarrierTime: number | null;
 }
 
 export default function SwimmerBarriersPage() {
@@ -90,8 +92,13 @@ export default function SwimmerBarriersPage() {
                     b.swimming_styles?.name === swimmingStyle
                 );
 
+                // Define barrier hierarchy from lowest to highest
+                const barrierHierarchy = ['B1', 'B2', 'A1', 'A2', 'A3', 'A4'];
+
                 let bestBarrierName: string | null = null;
                 let bestBarrierTime: number | null = null;
+                let nextBarrierName: string | null = null;
+                let nextBarrierTime: number | null = null;
                 const allPassedBarriers: string[] = [];
 
                 if (bestTime !== null) {
@@ -108,6 +115,32 @@ export default function SwimmerBarriersPage() {
                         bestBarrierName = best.barrier_types?.name || 'Bilinmiyor';
                         bestBarrierTime = best.time_milliseconds;
                         allPassedBarriers.push(...passed.map(p => p.barrier_types?.name));
+
+                        // Find next barrier in hierarchy
+                        const currentBarrierIndex = barrierHierarchy.indexOf(bestBarrierName || '');
+                        if (currentBarrierIndex !== -1 && currentBarrierIndex < barrierHierarchy.length - 1) {
+                            // There's a next barrier
+                            const nextBarrierNameInHierarchy = barrierHierarchy[currentBarrierIndex + 1];
+                            const nextBarrier = categoryBarriers.find(b => b.barrier_types?.name === nextBarrierNameInHierarchy);
+                            if (nextBarrier) {
+                                nextBarrierName = nextBarrier.barrier_types?.name || null;
+                                nextBarrierTime = nextBarrier.time_milliseconds;
+                            }
+                        }
+                    } else {
+                        // No barriers passed, find the first barrier to aim for (B1)
+                        const firstBarrier = categoryBarriers.find(b => b.barrier_types?.name === 'B1');
+                        if (firstBarrier) {
+                            nextBarrierName = firstBarrier.barrier_types?.name || null;
+                            nextBarrierTime = firstBarrier.time_milliseconds;
+                        }
+                    }
+                } else {
+                    // No time recorded, show first barrier as target
+                    const firstBarrier = categoryBarriers.find(b => b.barrier_types?.name === 'B1');
+                    if (firstBarrier) {
+                        nextBarrierName = firstBarrier.barrier_types?.name || null;
+                        nextBarrierTime = firstBarrier.time_milliseconds;
                     }
                 }
 
@@ -117,7 +150,9 @@ export default function SwimmerBarriersPage() {
                     bestTime,
                     bestBarrierName,
                     bestBarrierTime,
-                    allPassedBarriers
+                    allPassedBarriers,
+                    nextBarrierName,
+                    nextBarrierTime
                 });
             });
 
@@ -247,6 +282,9 @@ export default function SwimmerBarriersPage() {
                                 <th className="p-4 font-semibold text-gray-700">En İyi Derece</th>
                                 <th className="p-4 font-semibold text-gray-700">Geçilen Baraj</th>
                                 <th className="p-4 font-semibold text-gray-700">Baraj Derecesi</th>
+                                <th className="p-4 font-semibold text-gray-700">Hedef Baraj</th>
+                                <th className="p-4 font-semibold text-gray-700">Hedef Derece</th>
+                                <th className="p-4 font-semibold text-gray-700">Kalan Süre</th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
@@ -269,11 +307,34 @@ export default function SwimmerBarriersPage() {
                                     <td className="p-4 text-gray-600 font-mono text-sm">
                                         {row.bestBarrierTime ? formatTime(row.bestBarrierTime) : '-'}
                                     </td>
+                                    <td className="p-4">
+                                        {row.nextBarrierName ? (
+                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${isMale ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'}`}>
+                                                {row.nextBarrierName}
+                                            </span>
+                                        ) : (
+                                            <span className="text-gray-400 text-sm italic">-</span>
+                                        )}
+                                    </td>
+                                    <td className="p-4 text-gray-600 font-mono text-sm">
+                                        {row.nextBarrierTime ? formatTime(row.nextBarrierTime) : '-'}
+                                    </td>
+                                    <td className="p-4 text-gray-900 font-mono font-semibold">
+                                        {row.bestTime && row.nextBarrierTime ? (
+                                            <span className="text-orange-600">
+                                                {((row.nextBarrierTime - row.bestTime) / 1000).toFixed(2)}s
+                                            </span>
+                                        ) : row.nextBarrierTime ? (
+                                            <span className="text-gray-400 text-sm italic">Derece yok</span>
+                                        ) : (
+                                            <span className="text-gray-400 text-sm italic">-</span>
+                                        )}
+                                    </td>
                                 </tr>
                             ))}
                             {data.length === 0 && (
                                 <tr>
-                                    <td colSpan={5} className="p-8 text-center text-gray-500">
+                                    <td colSpan={8} className="p-8 text-center text-gray-500">
                                         Bu yaş grubu ve cinsiyet için tanımlı baraj bulunamadı.
                                     </td>
                                 </tr>
