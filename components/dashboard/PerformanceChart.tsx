@@ -11,6 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts';
 import { ChartDataPoint } from '@/lib/types';
+import { formatTime } from '@/lib/utils/timeFormat';
 
 interface PerformanceChartProps {
   data: ChartDataPoint[];
@@ -40,9 +41,6 @@ export default function PerformanceChart({
 
   return (
     <div className="w-full">
-      <h3 className="text-lg font-semibold text-pink-900 mb-4">
-        {swimmingStyle}
-      </h3>
       <ResponsiveContainer width="100%" height={300}>
         <LineChart
           data={chartData}
@@ -72,7 +70,7 @@ export default function PerformanceChart({
             }}
             labelStyle={{ color: '#831843' }}
             formatter={(value: number) => [
-              `${value.toFixed(2)} saniye`,
+              formatTime(value * 1000), // Convert seconds back to milliseconds for formatTime
               'Süre',
             ]}
           />

@@ -32,6 +32,7 @@ export default function DashboardPage() {
     new Map()
   );
   const [loading, setLoading] = useState(true);
+  const [expandedStyle, setExpandedStyle] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -113,6 +114,29 @@ export default function DashboardPage() {
     emptyIcon: isMale ? 'text-blue-300' : 'text-pink-300',
     emptyText: isMale ? 'text-blue-700' : 'text-pink-700',
   };
+
+  // Define stroke type order
+  const strokeOrder: Record<string, number> = {
+    'Serbest': 1,
+    'Sırtüstü': 2,
+    'Kurbağalama': 3,
+    'Kelebek': 4,
+    'Karışık': 5,
+  };
+
+  // Sort swimming styles by stroke type first, then by distance
+  const sortedSwimmingStyles = [...swimmingStyles].sort((a, b) => {
+    // First, sort by stroke type
+    const strokeOrderA = strokeOrder[a.stroke_type] || 999;
+    const strokeOrderB = strokeOrder[b.stroke_type] || 999;
+
+    if (strokeOrderA !== strokeOrderB) {
+      return strokeOrderA - strokeOrderB;
+    }
+
+    // If same stroke type, sort by distance (ascending)
+    return a.distance_meters - b.distance_meters;
+  });
 
   return (
     <div className="p-4 md:p-8">
@@ -211,9 +235,9 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Charts Grid */}
-        <div className="space-y-8">
-          {swimmingStyles.map((style) => {
+        {/* Charts Accordion */}
+        <div className="space-y-4">
+          {sortedSwimmingStyles.map((style) => {
             const races = racesByStyle.get(style.name) || [];
 
             // Only show styles that have data
@@ -223,21 +247,54 @@ export default function DashboardPage() {
 
             const chartData = prepareChartData(races);
             const dataWithDifferences = calculateTimeDifferences(chartData);
+            const isExpanded = expandedStyle === style.name;
 
             return (
-              <Card key={style.id} className="p-4 md:p-6">
-                <PerformanceChart
-                  data={dataWithDifferences}
-                  swimmingStyle={style.name}
-                />
-                <ChartLegend data={dataWithDifferences} />
-                <BarrierEvaluation
-                  swimmerId={swimmerId}
-                  age={swimmer.age}
-                  gender={swimmer.gender}
-                  poolType={selectedPoolType}
-                  swimmingStyle={style.name}
-                />
+              <Card key={style.id} className="overflow-hidden">
+                {/* Accordion Header */}
+                <button
+                  onClick={() => setExpandedStyle(isExpanded ? null : style.name)}
+                  className={`w-full p-4 md:p-6 flex items-center justify-between transition-colors ${isMale
+                    ? 'hover:bg-blue-50'
+                    : 'hover:bg-pink-50'
+                    }`}
+                >
+                  <h3 className={`text-lg md:text-xl font-semibold ${colorClasses.title}`}>
+                    {style.name}
+                  </h3>
+                  <svg
+                    className={`w-6 h-6 transition-transform duration-200 ${isExpanded ? 'rotate-180' : ''
+                      } ${colorClasses.subtitle}`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </button>
+
+                {/* Accordion Content */}
+                {isExpanded && (
+                  <div className="p-4 md:p-6 pt-0 border-t border-gray-100">
+                    <PerformanceChart
+                      data={dataWithDifferences}
+                      swimmingStyle={style.name}
+                    />
+                    <ChartLegend data={dataWithDifferences} />
+                    <BarrierEvaluation
+                      swimmerId={swimmerId}
+                      age={swimmer.age}
+                      gender={swimmer.gender}
+                      poolType={selectedPoolType}
+                      swimmingStyle={style.name}
+                    />
+                  </div>
+                )}
               </Card>
             );
           })}
