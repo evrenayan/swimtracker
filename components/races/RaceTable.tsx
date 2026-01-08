@@ -29,9 +29,9 @@ export default function RaceTable({
 
   const isMale = swimmerGender === 'Erkek';
   const colorClasses = {
-    headerBg: isMale ? 'bg-gradient-to-r from-blue-100 to-blue-50 border-blue-200' : 'bg-gradient-to-r from-pink-100 to-pink-50 border-pink-200',
-    headerText: isMale ? 'text-blue-900' : 'text-pink-900',
-    select: isMale ? 'border-blue-200 focus:ring-blue-500 focus:border-blue-500' : 'border-pink-200 focus:ring-pink-500 focus:border-pink-500',
+    headerBg: isMale ? 'bg-gradient-to-r from-blue-200 to-blue-100 border-blue-300' : 'bg-gradient-to-r from-pink-200 to-pink-100 border-pink-300',
+    headerText: isMale ? 'text-blue-950' : 'text-pink-950',
+    select: isMale ? 'border-blue-300 focus:ring-blue-500 focus:border-blue-500' : 'border-pink-300 focus:ring-pink-500 focus:border-pink-500',
     rowBorder: isMale ? 'border-blue-100' : 'border-pink-100',
     rowHover: isMale ? 'hover:bg-blue-50' : 'hover:bg-pink-50',
     rowAltBg: isMale ? 'bg-blue-50/30' : 'bg-pink-50/30',

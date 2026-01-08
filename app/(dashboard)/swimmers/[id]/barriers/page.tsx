@@ -9,6 +9,7 @@ import LoadingSpinner from '@/components/ui/LoadingSpinner';
 import Card from '@/components/ui/Card';
 import Button from '@/components/ui/Button';
 import { formatTime } from '@/lib/utils/timeFormat';
+import SwimmerNavigation from '@/components/swimmers/SwimmerNavigation';
 
 interface BestBarrierResult {
     poolType: string;
@@ -30,6 +31,14 @@ export default function SwimmerBarriersPage() {
     const [data, setData] = useState<BestBarrierResult[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+
+    // Filter state
+    const [filters, setFilters] = useState({
+        poolType: '',
+        swimmingStyle: '',
+        passedBarrier: '',
+        targetBarrier: '',
+    });
 
     const loadData = useCallback(async () => {
         try {
@@ -176,6 +185,44 @@ export default function SwimmerBarriersPage() {
         loadData();
     }, [loadData]);
 
+    // Extract unique values for filters
+    const uniqueValues = useMemo(() => {
+        const poolTypes = new Set<string>();
+        const swimmingStyles = new Set<string>();
+        const passedBarriers = new Set<string>();
+        const targetBarriers = new Set<string>();
+
+        data.forEach(row => {
+            if (row.poolType) poolTypes.add(row.poolType);
+            if (row.swimmingStyle) swimmingStyles.add(row.swimmingStyle);
+            if (row.bestBarrierName) passedBarriers.add(row.bestBarrierName);
+            if (row.nextBarrierName) targetBarriers.add(row.nextBarrierName);
+        });
+
+        return {
+            poolTypes: Array.from(poolTypes).sort(),
+            swimmingStyles: Array.from(swimmingStyles).sort(),
+            passedBarriers: Array.from(passedBarriers).sort(),
+            targetBarriers: Array.from(targetBarriers).sort(),
+        };
+    }, [data]);
+
+    // Filter data
+    const filteredData = useMemo(() => {
+        return data.filter(row => {
+            return (
+                (!filters.poolType || row.poolType === filters.poolType) &&
+                (!filters.swimmingStyle || row.swimmingStyle === filters.swimmingStyle) &&
+                (!filters.passedBarrier || row.bestBarrierName === filters.passedBarrier) &&
+                (!filters.targetBarrier || row.nextBarrierName === filters.targetBarrier)
+            );
+        });
+    }, [data, filters]);
+
+    const handleFilterChange = (key: keyof typeof filters, value: string) => {
+        setFilters(prev => ({ ...prev, [key]: value }));
+    };
+
     if (loading) {
         return (
             <div className="p-8 flex justify-center">
@@ -196,8 +243,8 @@ export default function SwimmerBarriersPage() {
 
     const isMale = swimmer.gender === 'Erkek';
     const themeClass = isMale ? 'text-blue-900' : 'text-pink-900';
-    const borderClass = isMale ? 'border-blue-200' : 'border-pink-200';
-    const bgHeaderClass = isMale ? 'bg-blue-50' : 'bg-pink-50';
+    const borderClass = isMale ? 'border-blue-300' : 'border-pink-300';
+    const bgHeaderClass = isMale ? 'bg-gradient-to-r from-blue-200 to-blue-100' : 'bg-gradient-to-r from-pink-200 to-pink-100';
 
     return (
         <div className="p-8 max-w-7xl mx-auto space-y-6">
@@ -249,26 +296,11 @@ export default function SwimmerBarriersPage() {
                         </div>
                     </div>
 
-                    <div className="flex gap-3">
-                        <Button
-                            onClick={() => router.push(`/swimmers/${swimmerId}`)}
-                            variant={isMale ? 'secondary-blue' : 'secondary'}
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                            </svg>
-                            Profil
-                        </Button>
-                        <Button
-                            onClick={() => router.push(`/swimmers/${swimmerId}/dashboard`)}
-                            variant={isMale ? 'secondary-blue' : 'secondary'}
-                        >
-                            <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                            </svg>
-                            Dashboard
-                        </Button>
-                    </div>
+                    <SwimmerNavigation
+                        swimmerId={swimmerId}
+                        isMale={isMale}
+                        onAddRace={() => router.push(`/swimmers/${swimmerId}`)}
+                    />
                 </div>
             </Card>
 
@@ -276,66 +308,133 @@ export default function SwimmerBarriersPage() {
                 <div className="overflow-x-auto">
                     <table className="w-full text-left border-collapse">
                         <thead>
-                            <tr className={`${bgHeaderClass} border-b ${borderClass}`}>
-                                <th className="p-4 font-semibold text-gray-700">Havuz</th>
-                                <th className="p-4 font-semibold text-gray-700">Branş</th>
-                                <th className="p-4 font-semibold text-gray-700">En İyi Derece</th>
-                                <th className="p-4 font-semibold text-gray-700">Geçilen Baraj</th>
-                                <th className="p-4 font-semibold text-gray-700">Baraj Derecesi</th>
-                                <th className="p-4 font-semibold text-gray-700">Hedef Baraj</th>
-                                <th className="p-4 font-semibold text-gray-700">Hedef Derece</th>
-                                <th className="p-4 font-semibold text-gray-700">Kalan Süre</th>
+                            <tr className={`${bgHeaderClass} border-b-2 ${borderClass}`}>
+                                <th className={`p-4 ${isMale ? 'text-blue-950' : 'text-pink-950'} font-semibold text-sm uppercase tracking-wide`}>
+                                    <div className="flex flex-col gap-2">
+                                        <span>Havuz</span>
+                                        <select
+                                            className={`text-xs rounded-md bg-white/50 border ${isMale ? 'border-blue-300 focus:ring-blue-500 focus:border-blue-500' : 'border-pink-300 focus:ring-pink-500 focus:border-pink-500'}`}
+                                            value={filters.poolType}
+                                            onChange={(e) => handleFilterChange('poolType', e.target.value)}
+                                        >
+                                            <option value="">Tümü</option>
+                                            {uniqueValues.poolTypes.map(type => (
+                                                <option key={type} value={type}>{type}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </th>
+                                <th className={`p-4 ${isMale ? 'text-blue-950' : 'text-pink-950'} font-semibold text-sm uppercase tracking-wide`}>
+                                    <div className="flex flex-col gap-2">
+                                        <span>Branş</span>
+                                        <select
+                                            className={`text-xs rounded-md bg-white/50 border ${isMale ? 'border-blue-300 focus:ring-blue-500 focus:border-blue-500' : 'border-pink-300 focus:ring-pink-500 focus:border-pink-500'}`}
+                                            value={filters.swimmingStyle}
+                                            onChange={(e) => handleFilterChange('swimmingStyle', e.target.value)}
+                                        >
+                                            <option value="">Tümü</option>
+                                            {uniqueValues.swimmingStyles.map(style => (
+                                                <option key={style} value={style}>{style}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </th>
+                                <th className={`p-4 ${isMale ? 'text-blue-950' : 'text-pink-950'} font-semibold text-sm uppercase tracking-wide align-top`}>
+                                    <span className="mt-1 block">En İyi Derece</span>
+                                </th>
+                                <th className={`p-4 ${isMale ? 'text-blue-950' : 'text-pink-950'} font-semibold text-sm uppercase tracking-wide`}>
+                                    <div className="flex flex-col gap-2">
+                                        <span>Geçilen Baraj</span>
+                                        <select
+                                            className={`text-xs rounded-md bg-white/50 border ${isMale ? 'border-blue-300 focus:ring-blue-500 focus:border-blue-500' : 'border-pink-300 focus:ring-pink-500 focus:border-pink-500'}`}
+                                            value={filters.passedBarrier}
+                                            onChange={(e) => handleFilterChange('passedBarrier', e.target.value)}
+                                        >
+                                            <option value="">Tümü</option>
+                                            {uniqueValues.passedBarriers.map(barrier => (
+                                                <option key={barrier} value={barrier}>{barrier}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </th>
+                                <th className={`p-4 ${isMale ? 'text-blue-950' : 'text-pink-950'} font-semibold text-sm uppercase tracking-wide align-top`}>
+                                    <span className="mt-1 block">Baraj Derecesi</span>
+                                </th>
+                                <th className={`p-4 ${isMale ? 'text-blue-950' : 'text-pink-950'} font-semibold text-sm uppercase tracking-wide`}>
+                                    <div className="flex flex-col gap-2">
+                                        <span>Hedef Baraj</span>
+                                        <select
+                                            className={`text-xs rounded-md bg-white/50 border ${isMale ? 'border-blue-300 focus:ring-blue-500 focus:border-blue-500' : 'border-pink-300 focus:ring-pink-500 focus:border-pink-500'}`}
+                                            value={filters.targetBarrier}
+                                            onChange={(e) => handleFilterChange('targetBarrier', e.target.value)}
+                                        >
+                                            <option value="">Tümü</option>
+                                            {uniqueValues.targetBarriers.map(barrier => (
+                                                <option key={barrier} value={barrier}>{barrier}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </th>
+                                <th className={`p-4 ${isMale ? 'text-blue-950' : 'text-pink-950'} font-semibold text-sm uppercase tracking-wide align-top`}>
+                                    <span className="mt-1 block">Hedef Derece</span>
+                                </th>
+                                <th className={`p-4 ${isMale ? 'text-blue-950' : 'text-pink-950'} font-semibold text-sm uppercase tracking-wide align-top`}>
+                                    <span className="mt-1 block">Kalan Süre</span>
+                                </th>
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-gray-100">
-                            {data.map((row, idx) => (
-                                <tr key={idx} className="hover:bg-gray-50 bg-white">
-                                    <td className="p-4 text-gray-900 font-medium">{row.poolType}</td>
-                                    <td className="p-4 text-gray-900">{row.swimmingStyle}</td>
-                                    <td className="p-4 text-gray-900 font-mono">
-                                        {row.bestTime ? formatTime(row.bestTime) : '-'}
-                                    </td>
-                                    <td className="p-4">
-                                        {row.bestBarrierName ? (
-                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${isMale ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'}`}>
-                                                {row.bestBarrierName}
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-400 text-sm italic">Baraj geçilemedi</span>
-                                        )}
-                                    </td>
-                                    <td className="p-4 text-gray-600 font-mono text-sm">
-                                        {row.bestBarrierTime ? formatTime(row.bestBarrierTime) : '-'}
-                                    </td>
-                                    <td className="p-4">
-                                        {row.nextBarrierName ? (
-                                            <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${isMale ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'}`}>
-                                                {row.nextBarrierName}
-                                            </span>
-                                        ) : (
-                                            <span className="text-gray-400 text-sm italic">-</span>
-                                        )}
-                                    </td>
-                                    <td className="p-4 text-gray-600 font-mono text-sm">
-                                        {row.nextBarrierTime ? formatTime(row.nextBarrierTime) : '-'}
-                                    </td>
-                                    <td className="p-4 text-gray-900 font-mono font-semibold">
-                                        {row.bestTime && row.nextBarrierTime ? (
-                                            <span className="text-orange-600">
-                                                {((row.nextBarrierTime - row.bestTime) / 1000).toFixed(2)}s
-                                            </span>
-                                        ) : row.nextBarrierTime ? (
-                                            <span className="text-gray-400 text-sm italic">Derece yok</span>
-                                        ) : (
-                                            <span className="text-gray-400 text-sm italic">-</span>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                            {data.length === 0 && (
+                            {filteredData.length > 0 ? (
+                                filteredData.map((row, idx) => (
+                                    <tr key={idx} className="hover:bg-gray-50 bg-white">
+                                        <td className="p-4 text-gray-900 font-medium">{row.poolType}</td>
+                                        <td className="p-4 text-gray-900">{row.swimmingStyle}</td>
+                                        <td className="p-4 text-gray-900 font-mono">
+                                            {row.bestTime ? formatTime(row.bestTime) : '-'}
+                                        </td>
+                                        <td className="p-4">
+                                            {row.bestBarrierName ? (
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${isMale ? 'bg-blue-100 text-blue-800' : 'bg-pink-100 text-pink-800'}`}>
+                                                    {row.bestBarrierName}
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-400 text-sm italic">Baraj geçilemedi</span>
+                                            )}
+                                        </td>
+                                        <td className="p-4 text-gray-600 font-mono text-sm">
+                                            {row.bestBarrierTime ? formatTime(row.bestBarrierTime) : '-'}
+                                        </td>
+                                        <td className="p-4">
+                                            {row.nextBarrierName ? (
+                                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${isMale ? 'bg-green-100 text-green-800' : 'bg-green-100 text-green-800'}`}>
+                                                    {row.nextBarrierName}
+                                                </span>
+                                            ) : (
+                                                <span className="text-gray-400 text-sm italic">-</span>
+                                            )}
+                                        </td>
+                                        <td className="p-4 text-gray-600 font-mono text-sm">
+                                            {row.nextBarrierTime ? formatTime(row.nextBarrierTime) : '-'}
+                                        </td>
+                                        <td className="p-4 text-gray-900 font-mono font-semibold">
+                                            {row.bestTime && row.nextBarrierTime ? (
+                                                <span className="text-orange-600">
+                                                    {((row.nextBarrierTime - row.bestTime) / 1000).toFixed(2)}s
+                                                </span>
+                                            ) : row.nextBarrierTime ? (
+                                                <span className="text-gray-400 text-sm italic">Derece yok</span>
+                                            ) : (
+                                                <span className="text-gray-400 text-sm italic">-</span>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
                                 <tr>
                                     <td colSpan={8} className="p-8 text-center text-gray-500">
-                                        Bu yaş grubu ve cinsiyet için tanımlı baraj bulunamadı.
+                                        {data.length === 0
+                                            ? 'Bu yaş grubu ve cinsiyet için tanımlı baraj bulunamadı.'
+                                            : 'Filtrelere uygun kayıt bulunamadı.'}
                                     </td>
                                 </tr>
                             )}
