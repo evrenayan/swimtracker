@@ -142,17 +142,26 @@ export default function BarriersPage() {
                                 Baraj değerlerini görüntüleyin {isUserAdmin && 've düzenleyin'}
                             </p>
                         </div>
-                        {isUserAdmin && (
+                        <div className="flex items-center gap-3">
                             <Button
-                                onClick={handleAddBarrier}
-                                variant="primary"
+                                onClick={() => router.push('/barriers/graph')}
+                                variant="secondary"
                             >
-                                <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                                </svg>
-                                Yeni Baraj Ekle
+                                Baraj Grafiği
                             </Button>
-                        )}
+
+                            {isUserAdmin && (
+                                <Button
+                                    onClick={handleAddBarrier}
+                                    variant="primary"
+                                >
+                                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                                    </svg>
+                                    Yeni Baraj Ekle
+                                </Button>
+                            )}
+                        </div>
                     </div>
                 </Card>
 
